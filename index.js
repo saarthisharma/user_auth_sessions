@@ -28,6 +28,13 @@ app.get('/' , (req , res)=>{
     console.log(req.session.id);    
     res.send("creating user auth");
 })
+app.post('/register' , (req , res) =>{
+    
+});
+
+app.post('/login' , (req , res) =>{
+
+});
 app.listen(port , ()=>{
     console.log(`server running at http://localhost:${port}`)
 });
