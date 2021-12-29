@@ -25,6 +25,17 @@ app.use(session({
     saveUninitialized:true,
     store:store
 }));
+
+// middleware to authenticate just after login
+const user_auth = (req , res , next)=>{
+    if(req.session.user_auth){
+        next()
+    }
+    else
+    {
+        res.redirect('http://localhost:3000/login');
+    }
+}
 //setting view engine to ejs , telling our server to use EJS template engine
 app.set("view engine", "ejs");
 app.use(express.json());
@@ -74,14 +85,22 @@ app.post('/login' , async(req , res)=>{
     }
     else
     {
+        req.session.user_auth = true;
         res.redirect('http://localhost:3000/authenticate')
     }
 
 });
-app.get('/authenticate' , (req , res)=>{
+app.get('/authenticate' ,user_auth, (req , res)=>{
         const username = req.session.username;
         res.render("authenticate", { name: username });
 })
+
+app.post('/logout' , (req , res) =>{
+    req.session.destroy( (err)=>{
+        if(err) throw err;
+        res.redirect('/');
+    });
+});
 app.listen(port , ()=>{
     console.log(`server running at http://localhost:${port}`)
 });
