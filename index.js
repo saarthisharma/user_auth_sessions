@@ -1,5 +1,6 @@
 const { MongoDBStore } = require("connect-mongodb-session");
 const express = require("express");
+const bcrypt = require("bcryptjs");
 const { Store } = require("express-session");
 const session = require("express-session");
 const mongoose = require("mongoose");
@@ -8,10 +9,6 @@ const mongoDBsession = require("connect-mongodb-session")(session);
 const app = express();
 const Usermodel = require("./Model/user");
 const port = 3000;
-// require("./views/index.html")
-// require("./views/register.html")
-// require("./views/login.html")
-// require("./views/app.css")
 const mongodbURI = 'mongodb://127.0.0.1:27017/Sessions';
 require("./DB/connection")
 // using middleware to get router
@@ -39,7 +36,6 @@ app.use(express.static(__dirname));
 app.get('/' , (req , res)=>{
     console.log(req.session);    
     console.log(req.session.id);    
-    // res.sendFile('views/index.html',{root:__dirname});
     res.render("index");
 })
 app.get('/register' , (req , res) =>{
@@ -47,22 +43,45 @@ app.get('/register' , (req , res) =>{
 });
 
 app.post('/register' , async(req , res)=>{
-    const {username , email , password } = req.body;
+    const {username , email , password } = req.body; // extracting the user details from request body
+    // searching from our usermodel if email is exist or not. 
     let user = await Usermodel.findOne({email});
     if(user){
-        return res.redirect('localhost:3000/register')
+        return res.redirect('http://localhost:3000/register')
     }
+    const hashedpwd = await bcrypt.hash(password , 12);
     user = new Usermodel({
         username,
         email,
-        password
-    })
-
+        password : hashedpwd
+    });
+await user.save();
+res.redirect('http://localhost:3000/login')
 });
 app.get('/login' , (req , res) =>{
     res.render("login");
 });
-app.post('/register' , (req , res)=>{});
+app.post('/login' , async(req , res)=>{
+    const {email , password} = req.body;
+    // searching from our usermodel if the user with email registered or not
+    let user = await Usermodel.findOne({email});
+    if(!user){
+        return res.redirect('http://localhost:3000/register');
+    }
+    const email_match = await bcrypt.compare(password , user.password)
+    if(!email_match){
+       return res.redirect('http://localhost:3000/login')
+    }
+    else
+    {
+        res.redirect('http://localhost:3000/authenticate')
+    }
+
+});
+app.get('/authenticate' , (req , res)=>{
+        const username = req.session.username;
+        res.render("authenticate", { name: username });
+})
 app.listen(port , ()=>{
     console.log(`server running at http://localhost:${port}`)
 });
