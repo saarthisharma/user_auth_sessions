@@ -4,7 +4,7 @@ const validator = require("validator");
 // now we are creating an instance of mongoose schema
 
 const UserSchema = new mongoose.Schema({
-    name : {
+    username : {
         type:String,
         maxlength:50
     },
