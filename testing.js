@@ -11,9 +11,8 @@ const app = express();
 const Usermodel = require("./Model/user");
 const port = 3000;
 const mongodbURI = 'mongodb://127.0.0.1:27017/Sessions';
-require("./DB/connection")
-// using middleware to get router
-// app.use('/' , require("./Routes/route"));
+const address = require('address');
+require("./DB/connection");
 // this session middleware creates on request body
 // mongodb store has 3 components uri , database name , collection name
 const store = new mongoDBsession ({
@@ -70,8 +69,8 @@ app.post('/register' , async(req , res)=>{
         email,
         password : hashedpwd
     });
-await user.save();
-res.redirect('http://localhost:3000/login')
+    await user.save();
+    res.redirect('http://localhost:3000/login')
 });
 app.get('/login' , (req , res) =>{
     res.render("login");
@@ -92,6 +91,21 @@ app.post('/login' , async(req , res)=>{
         console.log(req.headers);
         console.log("req--->", req.sessionID);
         user.sessionid = req.sessionID;
+        user.useragent = req.headers["user-agent"];
+        user.host = req.headers.host;
+        user.user_ip = address.ip();
+        // let mac_adr = address(function (err, ad) {
+        //     if(err)
+        //     {
+        //       return(err)
+        //     }
+        //     else
+        //     {
+        //       return(ad.mac);
+          
+        //     }
+        //   });
+        // user.user_MAC = mac_adr;
         await user.save();
         req.session.user_auth = true;
         req.session.cookie.email = user.email;

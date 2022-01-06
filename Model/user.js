@@ -25,6 +25,21 @@ const UserSchema = new mongoose.Schema({
         required:true,
         minlength:5,
         maxlength:255,
+    },
+    sessionid: {
+        type: String
+    },
+    useragent:{
+        type:String
+    },
+    host:{
+        type:String
+    },
+    user_ip:{
+        type:String
+    },
+    user_MAC:{
+        type:String
     }
 });
 // we will create a collection(i.e table) = User
